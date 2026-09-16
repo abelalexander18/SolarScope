@@ -1,0 +1,52 @@
+{
+  "Bengaluru": {
+    "state": "Karnataka",
+    "averageDailyIrradiance": 5.2,
+    "monthlyFactors": [0.9, 0.95, 1.0, 1.05, 1.0, 0.85, 0.8, 0.85, 0.9, 0.95, 0.95, 0.9]
+  },
+  "Mumbai": {
+    "state": "Maharashtra",
+    "averageDailyIrradiance": 5.0,
+    "monthlyFactors": [1.0, 1.0, 1.05, 1.05, 1.0, 0.8, 0.7, 0.75, 0.85, 0.95, 1.0, 1.0]
+  },
+  "Delhi": {
+    "state": "Delhi",
+    "averageDailyIrradiance": 5.1,
+    "monthlyFactors": [0.75, 0.85, 1.0, 1.1, 1.15, 1.1, 0.9, 0.9, 0.95, 1.0, 0.9, 0.8]
+  },
+  "Chennai": {
+    "state": "Tamil Nadu",
+    "averageDailyIrradiance": 5.3,
+    "monthlyFactors": [0.95, 1.0, 1.05, 1.05, 1.0, 0.95, 0.9, 0.95, 0.95, 0.85, 0.85, 0.9]
+  },
+  "Hyderabad": {
+    "state": "Telangana",
+    "averageDailyIrradiance": 5.2,
+    "monthlyFactors": [0.9, 0.95, 1.05, 1.1, 1.1, 0.95, 0.85, 0.85, 0.9, 0.95, 0.95, 0.9]
+  },
+  "Pune": {
+    "state": "Maharashtra",
+    "averageDailyIrradiance": 5.1,
+    "monthlyFactors": [1.0, 1.0, 1.05, 1.1, 1.05, 0.85, 0.75, 0.75, 0.85, 0.95, 1.0, 1.0]
+  },
+  "Ahmedabad": {
+    "state": "Gujarat",
+    "averageDailyIrradiance": 5.4,
+    "monthlyFactors": [0.9, 0.95, 1.05, 1.1, 1.15, 1.0, 0.85, 0.85, 0.95, 1.0, 0.95, 0.9]
+  },
+  "Kochi": {
+    "state": "Kerala",
+    "averageDailyIrradiance": 4.8,
+    "monthlyFactors": [1.0, 1.05, 1.05, 1.0, 0.85, 0.7, 0.7, 0.75, 0.85, 0.9, 0.95, 1.0]
+  },
+  "Jaipur": {
+    "state": "Rajasthan",
+    "averageDailyIrradiance": 5.5,
+    "monthlyFactors": [0.85, 0.95, 1.05, 1.1, 1.15, 1.1, 0.95, 0.95, 1.0, 1.05, 0.95, 0.9]
+  },
+  "Kolkata": {
+    "state": "West Bengal",
+    "averageDailyIrradiance": 4.9,
+    "monthlyFactors": [0.9, 0.95, 1.05, 1.1, 1.0, 0.85, 0.85, 0.85, 0.9, 0.95, 0.95, 0.9]
+  }
+}
