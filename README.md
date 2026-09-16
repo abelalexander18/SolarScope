@@ -9,14 +9,15 @@ An intelligent, interactive rooftop solar pre-feasibility and financial return e
 [![React](https://img.shields.io/badge/React-19.2-blue?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-[![License](https://img.shields.io/badge/License-MIT-emerald?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-emerald?style=for-the-badge)](#license)
 
-[Explore Features](#key-features) • [Calculation Methodology](#calculation-methodology) • [Tech Stack](#tech-stack) • [Quick Start](#quick-start) • [Deployment](#deployment)
+[Explore Features](#key-features) • [Calculation Methodology](#calculation-methodology) • [Tech Stack](#tech-stack) • [Architecture](#project-architecture) • [Quick Start](#quick-start) • [Deployment](#deployment)
 
 </div>
 
 ---
 
+<a id="problem-background"></a>
 ## 📌 Problem Background
 
 Homeowners frequently face significant uncertainty when considering rooftop solarization:
@@ -29,6 +30,7 @@ Homeowners frequently face significant uncertainty when considering rooftop sola
 
 ---
 
+<a id="key-features"></a>
 ## ✨ Key Features
 
 - **🏡 Interactive Rooftop Modeling**:
@@ -55,6 +57,7 @@ Homeowners frequently face significant uncertainty when considering rooftop sola
 
 ---
 
+<a id="calculation-methodology"></a>
 ## 🧮 Calculation Methodology
 
 SolarScope relies on open physical relationships and meteorological radiation benchmarks:
@@ -70,6 +73,7 @@ SolarScope relies on open physical relationships and meteorological radiation be
 
 ---
 
+<a id="tech-stack"></a>
 ## 🛠️ Tech Stack
 
 - **Framework**: [Next.js 16 (App Router)](https://nextjs.org/) with Turbopack
@@ -81,6 +85,7 @@ SolarScope relies on open physical relationships and meteorological radiation be
 
 ---
 
+<a id="project-architecture"></a>
 ## 📂 Project Architecture
 
 ```plaintext
@@ -115,6 +120,7 @@ SolarScope/
 
 ---
 
+<a id="quick-start"></a>
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -153,6 +159,7 @@ npm run start
 
 ---
 
+<a id="deployment"></a>
 ## 🌐 Deployment
 
 The easiest way to deploy SolarScope is with [Vercel](https://vercel.com):
@@ -164,12 +171,14 @@ The easiest way to deploy SolarScope is with [Vercel](https://vercel.com):
 
 ---
 
+<a id="advisory-disclaimer"></a>
 ## ⚖️ Advisory Disclaimer
 
 SolarScope provides high-accuracy planning estimates based on meteorological solar datasets and mathematical models for early-stage feasibility evaluation. It does not replace a certified on-site structural audit, shading drone survey, or official solar vendor quotation prior to commercial commitment.
 
 ---
 
+<a id="license"></a>
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
