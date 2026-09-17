@@ -184,6 +184,7 @@ export function SolarCalculator({
     return (
       <ResultsDashboard
         result={result}
+        input={input}
         onReset={() => {
           setStep(0);
           setResult(undefined);

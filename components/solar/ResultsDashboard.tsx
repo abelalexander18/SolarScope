@@ -54,19 +54,70 @@ const insightIcons = {
 const rupee = (v: number) =>
   `₹${Math.abs(v) >= 100000 ? `${(v / 100000).toFixed(1)}L` : `${Math.round(v / 1000)}k`}`;
 
+import { saveCalculation } from "@/app/dashboard/actions";
+import type { SolarCalculatorInput } from "@/data/mockSolarResult";
+import { Bookmark, CheckCircle2 } from "lucide-react";
+
 export function ResultsDashboard({
   result,
+  input,
   onReset,
 }: {
   result: SolarResult;
+  input?: SolarCalculatorInput;
   onReset?: () => void;
 }) {
   const [visible, setVisible] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setVisible(true));
     return () => cancelAnimationFrame(id);
   }, []);
+
+  const handleSave = async () => {
+    if (!input) return;
+    setIsSaving(true);
+    
+    // Convert camelCase input/result fields to snake_case for Supabase
+    const payload = {
+      roof_area: input.roofArea,
+      usable_roof_percent: input.usableRoofPercent,
+      city: input.city,
+      state: input.state,
+      latitude: input.latitude,
+      longitude: input.longitude,
+      fetched_irradiance: input.fetchedIrradiance,
+      orientation: input.orientation,
+      shading: input.shading,
+      electricity_tariff: input.electricityTariff,
+      installation_cost_per_kw: input.installationCostPerKw,
+      panel_efficiency: input.panelEfficiency,
+      performance_ratio: input.performanceRatio,
+      emission_factor: input.emissionFactor,
+      
+      system_size_kw: result.systemSizeKw,
+      annual_generation_kwh: result.monthlyGeneration.reduce((a, b) => a + b.generation, 0),
+      annual_savings_rs: result.financialProjection[1].savings - result.financialProjection[0].savings,
+      payback_period_years: result.paybackYears,
+      co2_mitigation_tonnes: result.co2OffsetTonnes,
+    };
+
+    const response = await saveCalculation(payload);
+    setIsSaving(false);
+    
+    if (response.success) {
+      setSaveSuccess(true);
+    } else {
+      if (response.error === 'You must be logged in to save.') {
+        alert('Please Sign In to save your calculation.');
+        window.location.href = '/login';
+      } else {
+        alert(response.error);
+      }
+    }
+  };
 
   return (
     <div className="space-y-16 pb-20">
@@ -77,22 +128,39 @@ export function ResultsDashboard({
             <Sparkles className="h-4 w-4 text-fresh" />
             SolarScope Analysis Engine
           </div>
-          {onReset ? (
-            <Button
-              variant="soft"
-              size="sm"
-              onClick={onReset}
-              className="gap-2"
-            >
-              <RotateCcw className="h-3.5 w-3.5" /> Modify Inputs
-            </Button>
-          ) : (
-            <Button asChild variant="soft" size="sm" className="gap-2">
-              <Link href="/calculator">
-                <RotateCcw className="h-3.5 w-3.5" /> New Calculation
-              </Link>
-            </Button>
-          )}
+          <div className="flex items-center gap-3">
+            {input && (
+              <Button
+                variant="hero"
+                size="sm"
+                onClick={handleSave}
+                disabled={isSaving || saveSuccess}
+                className="gap-2"
+              >
+                {saveSuccess ? (
+                  <><CheckCircle2 className="h-3.5 w-3.5" /> Saved to Workspace</>
+                ) : (
+                  <><Bookmark className="h-3.5 w-3.5" /> {isSaving ? 'Saving...' : 'Save Calculation'}</>
+                )}
+              </Button>
+            )}
+            {onReset ? (
+              <Button
+                variant="soft"
+                size="sm"
+                onClick={onReset}
+                className="gap-2"
+              >
+                <RotateCcw className="h-3.5 w-3.5" /> Modify Inputs
+              </Button>
+            ) : (
+              <Button asChild variant="soft" size="sm" className="gap-2">
+                <Link href="/calculator">
+                  <RotateCcw className="h-3.5 w-3.5" /> New Calculation
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">

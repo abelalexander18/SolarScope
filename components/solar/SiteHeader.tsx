@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import { createClient } from "@/utils/supabase/client";
+
 const links = [
   { href: "/", label: "Home" },
   { href: "/calculator", label: "Calculator" },
@@ -17,6 +19,7 @@ const links = [
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -24,6 +27,18 @@ export function SiteHeader() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setUser(data?.user ?? null));
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+    return () => authListener.subscription.unsubscribe();
   }, []);
 
   return (
@@ -72,7 +87,16 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <div className="hidden justify-end lg:flex">
+        <div className="hidden items-center gap-4 lg:flex">
+          {user ? (
+            <Link href="/dashboard" className="text-sm font-semibold text-muted-foreground hover:text-foreground">
+              My Workspace
+            </Link>
+          ) : (
+            <Link href="/login" className="text-sm font-semibold text-muted-foreground hover:text-foreground">
+              Sign In
+            </Link>
+          )}
           <Button asChild variant="hero">
             <Link href="/calculator">
               Calculate Now <ArrowUpRight className="ml-1 h-4 w-4" />
@@ -119,6 +143,23 @@ export function SiteHeader() {
               </Link>
             );
           })}
+          {user ? (
+            <Link
+              href="/dashboard"
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-4 py-3 font-semibold text-foreground hover:bg-secondary transition-colors"
+            >
+              My Workspace
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-4 py-3 font-semibold text-foreground hover:bg-secondary transition-colors"
+            >
+              Sign In
+            </Link>
+          )}
           <Button asChild variant="hero" className="mt-3">
             <Link href="/calculator" onClick={() => setOpen(false)}>
               Calculate Now <ArrowUpRight className="ml-1 h-4 w-4" />
