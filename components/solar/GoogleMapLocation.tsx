@@ -28,6 +28,7 @@ interface GoogleMapLocationProps {
   state?: string;
   latitude?: number;
   longitude?: number;
+  fetchedIrradiance?: number;
   locationName?: string;
 }
 
@@ -36,10 +37,11 @@ export function GoogleMapLocation({
   state = "India",
   latitude,
   longitude,
+  fetchedIrradiance,
 }: GoogleMapLocationProps) {
   const coords =
     latitude !== undefined && longitude !== undefined
-      ? { lat: latitude, lng: longitude, solarIrradiance: 5.2 }
+      ? { lat: latitude, lng: longitude, solarIrradiance: fetchedIrradiance ?? 5.2 }
       : CITY_COORDINATES[city] ?? { lat: 12.9716, lng: 77.5946, solarIrradiance: 5.3 };
 
   const [zoomLevel, setZoomLevel] = useState(0.06);
@@ -51,6 +53,7 @@ export function GoogleMapLocation({
     "";
 
   // Reset zoom on city change
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     setZoomLevel(0.06);
   }, [city]);
@@ -63,9 +66,11 @@ export function GoogleMapLocation({
   },${coords.lat + zoomLevel}`;
 
   const mapUrl = googleMapsKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${googleMapsKey}&q=${encodeURIComponent(
-        `${city}, ${state}`
-      )}&zoom=13`
+    ? `https://www.google.com/maps/embed/v1/place?key=${googleMapsKey}&q=${
+        latitude !== undefined && longitude !== undefined
+          ? `${latitude},${longitude}`
+          : encodeURIComponent(`${city}, ${state}`)
+      }&zoom=13`
     : `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(
         bbox
       )}&layer=mapnik&marker=${coords.lat}%2C${coords.lng}`;

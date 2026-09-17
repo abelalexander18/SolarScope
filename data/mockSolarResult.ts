@@ -14,6 +14,9 @@ export interface SolarCalculatorInput {
   panelEfficiency: number;
   performanceRatio: number;
   emissionFactor: number;
+  latitude?: number;
+  longitude?: number;
+  fetchedIrradiance?: number;
 }
 
 export interface SolarMetric {
@@ -192,7 +195,7 @@ export function computeSolarPotential(input: SolarCalculatorInput): SolarResult 
   const powerDensityW = input.panelEfficiency * 10; // e.g. 21% -> 210 W/m²
   const systemSizeKw = Math.round((usableArea * powerDensityW) / 1000 * 10) / 10;
 
-  const irradiance = cityIrradiance[input.city] ?? 5.2;
+  const irradiance = input.fetchedIrradiance ?? cityIrradiance[input.city] ?? 5.2;
   const orientFactor = orientationFactors[input.orientation] ?? 0.9;
   const shadeFactor = shadingFactors[input.shading] ?? 0.85;
   const perfRatio = (input.performanceRatio || 80) / 100;

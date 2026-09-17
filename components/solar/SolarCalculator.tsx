@@ -12,7 +12,7 @@ import {
   Settings2,
   Sun,
   Sparkles,
-  Zap,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -35,6 +35,8 @@ import { SolarVisual } from "./SolarVisual";
 import { GoogleMapLocation } from "./GoogleMapLocation";
 import { OrientationCompass } from "./OrientationCompass";
 import { ResultsDashboard } from "./ResultsDashboard";
+import { MapboxRoofDraw } from "./MapboxRoofDraw";
+import { fetchNASA_PSH } from "@/lib/solar/api";
 
 const stages = ["Roof", "Location", "Orientation", "Energy", "Results"];
 
@@ -346,7 +348,7 @@ export function SolarCalculator({
                 </div>
               ) : step === 1 ? (
                 /* Step 2 Location: Real Interactive Map */
-                <GoogleMapLocation city={input.city} state={input.state} />
+                <GoogleMapLocation city={input.city} state={input.state} latitude={input.latitude} longitude={input.longitude} fetchedIrradiance={input.fetchedIrradiance} />
               ) : step === 2 ? (
                 /* Step 3 Orientation: Real SVG Interactive Compass */
                 <OrientationCompass
@@ -375,12 +377,32 @@ function RoofStep({
     v: SolarCalculatorInput[K]
   ) => void;
 }) {
+  const [mode, setMode] = useState<"manual" | "map">("manual");
+
   return (
     <div>
       <p className="eyebrow">01 — Your roof</p>
-      <h2 className="mt-3 font-display text-3xl font-extrabold text-foreground">
-        Tell us about your roof
-      </h2>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-0">
+        <h2 className="mt-3 font-display text-3xl font-extrabold text-foreground">
+          Tell us about your roof
+        </h2>
+        <div className="mt-0 sm:mt-3 flex items-center bg-secondary rounded-lg p-1 border border-line w-fit">
+          <button
+            type="button"
+            className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${mode === "manual" ? "bg-surface shadow-xs text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={() => setMode("manual")}
+          >
+            Manual
+          </button>
+          <button
+            type="button"
+            className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${mode === "map" ? "bg-surface shadow-xs text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={() => setMode("map")}
+          >
+            Map Draw
+          </button>
+        </div>
+      </div>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
         Enter your approximate total rooftop area and how much of it is unshaded and structurally usable.
       </p>
@@ -394,12 +416,16 @@ function RoofStep({
             approx. {(input.roofArea * 10.764).toFixed(0)} sq. ft
           </span>
         </div>
-        <NumberControl
-          value={input.roofArea}
-          onChange={(v) => patch("roofArea", v)}
-          step={5}
-          suffix="m²"
-        />
+        {mode === "manual" ? (
+          <NumberControl
+            value={input.roofArea}
+            onChange={(v) => patch("roofArea", v)}
+            step={5}
+            suffix="m²"
+          />
+        ) : (
+          <MapboxRoofDraw onAreaCalculated={(area) => patch("roofArea", area)} />
+        )}
       </div>
 
       <div className="mt-9">
@@ -442,6 +468,36 @@ function LocationStep({
     v: SolarCalculatorInput[K]
   ) => void;
 }) {
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleUseLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+    
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        patch("latitude", latitude);
+        patch("longitude", longitude);
+        patch("city", "Exact Location");
+        
+        const psh = await fetchNASA_PSH(latitude, longitude);
+        if (psh) {
+          patch("fetchedIrradiance", psh);
+        }
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error(error);
+        alert("Unable to retrieve your location");
+        setIsLocating(false);
+      }
+    );
+  };
+
   return (
     <div>
       <p className="eyebrow">02 — Location</p>
@@ -452,7 +508,26 @@ function LocationStep({
         Solar resource irradiance data will be calibrated to your exact geographical climate.
       </p>
 
-      <div className="mt-9 space-y-5">
+      <div className="mt-6">
+        <Button
+          type="button"
+          variant="hero"
+          className="w-full gap-2 shadow-action"
+          onClick={handleUseLocation}
+          disabled={isLocating}
+        >
+          {isLocating ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+          {isLocating ? "Locating & Fetching NASA Data..." : "Use My Exact Location"}
+        </Button>
+      </div>
+
+      <div className="my-6 flex items-center gap-3">
+        <span className="h-px flex-1 bg-line" />
+        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Or select city</span>
+        <span className="h-px flex-1 bg-line" />
+      </div>
+
+      <div className="space-y-5">
         <div>
           <label className="mb-2 block text-xs font-bold text-muted-foreground uppercase tracking-wider">
             Country
@@ -507,6 +582,9 @@ function LocationStep({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="Exact Location">
+                Exact Location (GPS {input.latitude ? `${input.latitude.toFixed(2)}, ${input.longitude?.toFixed(2)}` : "..."})
+              </SelectItem>
               {cities.map((c) => (
                 <SelectItem key={c.city} value={c.city}>
                   {c.city} ({c.state})
