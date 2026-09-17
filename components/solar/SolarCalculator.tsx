@@ -13,8 +13,10 @@ import {
   Sun,
   Sparkles,
   MapPin,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import {
   Select,
@@ -36,7 +38,7 @@ import { GoogleMapLocation } from "./GoogleMapLocation";
 import { OrientationCompass } from "./OrientationCompass";
 import { ResultsDashboard } from "./ResultsDashboard";
 import { MapboxRoofDraw } from "./MapboxRoofDraw";
-import { fetchNASA_PSH } from "@/lib/solar/api";
+import { fetchNASA_PSH, geocodeLocation } from "@/lib/solar/api";
 
 const stages = ["Roof", "Location", "Orientation", "Energy", "Results"];
 
@@ -469,6 +471,8 @@ function LocationStep({
   ) => void;
 }) {
   const [isLocating, setIsLocating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   const handleUseLocation = () => {
     if (!navigator.geolocation) {
@@ -498,6 +502,26 @@ function LocationStep({
     );
   };
 
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+    setIsSearching(true);
+    const result = await geocodeLocation(searchQuery);
+    if (result) {
+      patch("latitude", result.lat);
+      patch("longitude", result.lng);
+      patch("city", "Exact Location");
+      if (result.state) patch("state", result.state);
+      
+      const psh = await fetchNASA_PSH(result.lat, result.lng);
+      if (psh) {
+        patch("fetchedIrradiance", psh);
+      }
+    } else {
+      alert("Location not found. Please try a different search.");
+    }
+    setIsSearching(false);
+  };
+
   return (
     <div>
       <p className="eyebrow">02 — Location</p>
@@ -508,7 +532,26 @@ function LocationStep({
         Solar resource irradiance data will be calibrated to your exact geographical climate.
       </p>
 
-      <div className="mt-6">
+      <div className="mt-6 flex flex-col gap-4">
+        <div className="flex gap-2">
+          <Input 
+            placeholder="Type any city or location..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+            className="flex-1"
+          />
+          <Button type="button" onClick={handleSearch} disabled={isSearching || !searchQuery.trim()} variant="secondary">
+            {isSearching ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-line" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Or</span>
+          <span className="h-px flex-1 bg-line" />
+        </div>
+
         <Button
           type="button"
           variant="hero"
@@ -523,20 +566,11 @@ function LocationStep({
 
       <div className="my-6 flex items-center gap-3">
         <span className="h-px flex-1 bg-line" />
-        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Or select city</span>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Or select from predefined</span>
         <span className="h-px flex-1 bg-line" />
       </div>
 
       <div className="space-y-5">
-        <div>
-          <label className="mb-2 block text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            Country
-          </label>
-          <div className="rounded-xl border border-line bg-muted/60 px-4 py-3 font-bold text-sm text-foreground">
-            🇮🇳 India
-          </div>
-        </div>
-
         <div>
           <label className="mb-2 block text-xs font-bold text-muted-foreground uppercase tracking-wider">
             State
@@ -553,6 +587,9 @@ function LocationStep({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              {input.city === "Exact Location" && input.state !== "Karnataka" && input.state !== "Maharashtra" && input.state !== "Delhi" && input.state !== "Tamil Nadu" && input.state !== "Telangana" && input.state !== "Gujarat" && input.state !== "Kerala" && input.state !== "Rajasthan" && input.state !== "West Bengal" && (
+                <SelectItem value={input.state}>{input.state}</SelectItem>
+              )}
               <SelectItem value="Karnataka">Karnataka</SelectItem>
               <SelectItem value="Maharashtra">Maharashtra</SelectItem>
               <SelectItem value="Delhi">Delhi</SelectItem>

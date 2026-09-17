@@ -27,3 +27,34 @@ export async function fetchNASA_PSH(lat: number, lng: number): Promise<number | 
     return null; // The fallback mechanism will handle this in the computation logic
   }
 }
+
+export async function geocodeLocation(query: string): Promise<{ lat: number; lng: number; name: string; state?: string } | null> {
+  try {
+    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    if (!token) return null;
+
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&country=in&types=place,locality,region`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    
+    if (data.features && data.features.length > 0) {
+      const feature = data.features[0];
+      const lng = feature.center[0];
+      const lat = feature.center[1];
+      
+      const stateContext = feature.context?.find((c: any) => c.id.startsWith("region"));
+      
+      return {
+        lat,
+        lng,
+        name: feature.text,
+        state: stateContext ? stateContext.text : undefined,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Mapbox Geocoding Error:", err);
+    return null;
+  }
+}
