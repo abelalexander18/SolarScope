@@ -14,7 +14,7 @@ export default async function LoginPage({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Back to Calculator
+        <ArrowLeft className="h-4 w-4" /> Back
       </Link>
       
       <div className="w-full max-w-sm rounded-3xl border border-line bg-surface/50 p-8 shadow-xs backdrop-blur-md">
