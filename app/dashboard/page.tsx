@@ -22,25 +22,7 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-line bg-surface p-4 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="text-sm font-bold text-muted-foreground hover:text-foreground flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" /> Back
-          </Link>
-          <span className="h-4 w-px bg-line" />
-          <h1 className="font-display font-extrabold text-foreground">My Workspace</h1>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-muted-foreground">{user.email}</span>
-          <form action={logout}>
-            <button className="text-sm font-bold text-red-500 hover:text-red-600 flex items-center gap-2">
-              <LogOut className="h-4 w-4" /> Sign Out
-            </button>
-          </form>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background pt-24">
 
       <main className="max-w-6xl mx-auto p-8">
         <h2 className="font-display text-3xl font-extrabold text-foreground mb-8">Saved Calculations</h2>

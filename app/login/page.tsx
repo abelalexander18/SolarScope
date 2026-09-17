@@ -13,7 +13,7 @@ export default async function LoginPage({
   
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground">
+      <Link href="/calculator" className="absolute top-8 left-8 flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Back
       </Link>
       

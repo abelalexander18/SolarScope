@@ -89,9 +89,22 @@ export function SiteHeader() {
 
         <div className="hidden items-center gap-4 lg:flex">
           {user ? (
-            <Link href="/dashboard" className="text-sm font-semibold text-muted-foreground hover:text-foreground">
-              My Workspace
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link href="/dashboard" className="text-sm font-semibold text-muted-foreground hover:text-foreground">
+                My Workspace
+              </Link>
+              <Button 
+                variant="ghost" 
+                onClick={async () => {
+                  const supabase = createClient();
+                  await supabase.auth.signOut();
+                  window.location.href = '/';
+                }}
+                className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
+              >
+                Sign Out
+              </Button>
+            </div>
           ) : (
             <Link href="/login" className="text-sm font-semibold text-muted-foreground hover:text-foreground">
               Sign In
@@ -144,13 +157,25 @@ export function SiteHeader() {
             );
           })}
           {user ? (
-            <Link
-              href="/dashboard"
-              onClick={() => setOpen(false)}
-              className="rounded-lg px-4 py-3 font-semibold text-foreground hover:bg-secondary transition-colors"
-            >
-              My Workspace
-            </Link>
+            <>
+              <Link
+                href="/dashboard"
+                onClick={() => setOpen(false)}
+                className="rounded-lg px-4 py-3 font-semibold text-foreground hover:bg-secondary transition-colors"
+              >
+                My Workspace
+              </Link>
+              <button
+                onClick={async () => {
+                  const supabase = createClient();
+                  await supabase.auth.signOut();
+                  window.location.href = '/';
+                }}
+                className="rounded-lg px-4 py-3 font-semibold text-left text-red-500 hover:bg-red-500/10 transition-colors"
+              >
+                Sign Out
+              </button>
+            </>
           ) : (
             <Link
               href="/login"
