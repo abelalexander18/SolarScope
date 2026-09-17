@@ -40,7 +40,7 @@ import { ResultsDashboard } from "./ResultsDashboard";
 import { MapboxRoofDraw } from "./MapboxRoofDraw";
 import { fetchNASA_PSH, geocodeLocation, searchLocations } from "@/lib/solar/api";
 
-const stages = ["Roof", "Location", "Orientation", "Energy", "Results"];
+const stages = ["Location", "Roof", "Orientation", "Energy", "Results"];
 
 const directionCopy: Record<Direction, string> = {
   N: "Lower direct exposure in the northern hemisphere (approx. 65% yield)",
@@ -266,8 +266,8 @@ export function SolarCalculator({
             {/* Form Column */}
             <div className="p-6 sm:p-10 flex flex-col justify-between">
               <div>
-                {step === 0 && <RoofStep input={input} patch={patch} />}
-                {step === 1 && <LocationStep input={input} patch={patch} />}
+                {step === 0 && <LocationStep input={input} patch={patch} />}
+                {step === 1 && <RoofStep input={input} patch={patch} />}
                 {step === 2 && <OrientationStep input={input} patch={patch} />}
                 {step === 3 && (
                   <EnergyStep
@@ -315,7 +315,10 @@ export function SolarCalculator({
             {/* Interactive Preview Column */}
             <div className="border-t border-line bg-secondary/35 p-6 sm:p-8 lg:border-l lg:border-t-0 flex flex-col justify-center">
               {step === 0 ? (
-                /* Step 1 Roof Visual: Solar Yield card cleanly outside house, then house with ample space */
+                /* Step 1 Location: Real Interactive Map */
+                <GoogleMapLocation city={input.city} state={input.state} latitude={input.latitude} longitude={input.longitude} fetchedIrradiance={input.fetchedIrradiance} />
+              ) : step === 1 ? (
+                /* Step 2 Roof Visual: Solar Yield card cleanly outside house, then house with ample space */
                 <div className="flex flex-col gap-4">
                   {/* Dedicated Header Information Card */}
                   <div className="flex items-center justify-between rounded-2xl border border-line bg-surface/90 p-4 shadow-xs">
@@ -348,9 +351,6 @@ export function SolarCalculator({
                     Real-time array visualization updating as usable roof percentage is adjusted.
                   </p>
                 </div>
-              ) : step === 1 ? (
-                /* Step 2 Location: Real Interactive Map */
-                <GoogleMapLocation city={input.city} state={input.state} latitude={input.latitude} longitude={input.longitude} fetchedIrradiance={input.fetchedIrradiance} />
               ) : step === 2 ? (
                 /* Step 3 Orientation: Real SVG Interactive Compass */
                 <OrientationCompass
@@ -383,7 +383,7 @@ function RoofStep({
 
   return (
     <div>
-      <p className="eyebrow">01 — Your roof</p>
+      <p className="eyebrow">02 — Your roof</p>
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-0">
         <h2 className="mt-3 font-display text-3xl font-extrabold text-foreground">
           Tell us about your roof
@@ -426,7 +426,7 @@ function RoofStep({
             suffix="m²"
           />
         ) : (
-          <MapboxRoofDraw onAreaCalculated={(area) => patch("roofArea", area)} />
+          <MapboxRoofDraw onAreaCalculated={(area) => patch("roofArea", area)} latitude={input.latitude} longitude={input.longitude} />
         )}
       </div>
 
@@ -566,7 +566,7 @@ function LocationStep({
 
   return (
     <div>
-      <p className="eyebrow">02 — Location</p>
+      <p className="eyebrow">01 — Location</p>
       <h2 className="mt-3 font-display text-3xl font-extrabold text-foreground">
         Where is your home?
       </h2>

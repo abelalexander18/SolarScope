@@ -10,9 +10,11 @@ import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
 interface MapboxRoofDrawProps {
   onAreaCalculated: (areaSqM: number) => void;
+  latitude?: number;
+  longitude?: number;
 }
 
-export function MapboxRoofDraw({ onAreaCalculated }: MapboxRoofDrawProps) {
+export function MapboxRoofDraw({ onAreaCalculated, latitude, longitude }: MapboxRoofDrawProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const draw = useRef<MapboxDraw | null>(null);
@@ -23,10 +25,13 @@ export function MapboxRoofDraw({ onAreaCalculated }: MapboxRoofDrawProps) {
 
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
+    const centerLng = longitude !== undefined ? longitude : 77.5946;
+    const centerLat = latitude !== undefined ? latitude : 12.9716;
+
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/satellite-streets-v12",
-      center: [77.5946, 12.9716], // Default Bengaluru
+      center: [centerLng, centerLat],
       zoom: 18,
     });
 
@@ -49,15 +54,13 @@ export function MapboxRoofDraw({ onAreaCalculated }: MapboxRoofDrawProps) {
       map.current?.resize();
     }, 250);
 
-    const updateArea = () => {
+    const updateArea = (e: any) => {
       const data = draw.current?.getAll();
       if (data && data.features.length > 0) {
-        let totalArea = 0;
-        data.features.forEach((feature) => {
-          totalArea += area(feature as Parameters<typeof area>[0]);
-        });
-        setDrawnArea(totalArea);
-        onAreaCalculated(Math.round(totalArea));
+        const calculatedArea = area(data);
+        const roundedArea = Math.round(calculatedArea * 100) / 100;
+        setDrawnArea(roundedArea);
+        onAreaCalculated(roundedArea);
       } else {
         setDrawnArea(0);
         onAreaCalculated(0);
@@ -80,6 +83,12 @@ export function MapboxRoofDraw({ onAreaCalculated }: MapboxRoofDrawProps) {
       "top-right"
     );
   }, [onAreaCalculated]);
+
+  useEffect(() => {
+    if (map.current && latitude !== undefined && longitude !== undefined) {
+      map.current.flyTo({ center: [longitude, latitude], zoom: 18 });
+    }
+  }, [latitude, longitude]);
 
   return (
     <>
