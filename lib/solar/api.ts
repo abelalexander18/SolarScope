@@ -58,3 +58,32 @@ export async function geocodeLocation(query: string): Promise<{ lat: number; lng
     return null;
   }
 }
+
+export async function searchLocations(query: string): Promise<Array<{ lat: number; lng: number; name: string; fullName: string; state?: string }>> {
+  try {
+    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    if (!token) return [];
+
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&country=in&types=place,locality,region&limit=5`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = await res.json();
+    
+    if (data.features && data.features.length > 0) {
+      return data.features.map((feature: any) => {
+        const stateContext = feature.context?.find((c: any) => c.id.startsWith("region"));
+        return {
+          lat: feature.center[1],
+          lng: feature.center[0],
+          name: feature.text,
+          fullName: feature.place_name,
+          state: stateContext ? stateContext.text : undefined,
+        };
+      });
+    }
+    return [];
+  } catch (err) {
+    console.error("Mapbox Geocoding Error:", err);
+    return [];
+  }
+}

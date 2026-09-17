@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -38,7 +38,7 @@ import { GoogleMapLocation } from "./GoogleMapLocation";
 import { OrientationCompass } from "./OrientationCompass";
 import { ResultsDashboard } from "./ResultsDashboard";
 import { MapboxRoofDraw } from "./MapboxRoofDraw";
-import { fetchNASA_PSH, geocodeLocation } from "@/lib/solar/api";
+import { fetchNASA_PSH, geocodeLocation, searchLocations } from "@/lib/solar/api";
 
 const stages = ["Roof", "Location", "Orientation", "Energy", "Results"];
 
@@ -473,6 +473,31 @@ function LocationStep({
   const [isLocating, setIsLocating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim().length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    const timeoutId = setTimeout(async () => {
+      const results = await searchLocations(searchQuery);
+      setSuggestions(results);
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   const handleUseLocation = () => {
     if (!navigator.geolocation) {
@@ -502,14 +527,31 @@ function LocationStep({
     );
   };
 
+  const handleSelectSuggestion = async (suggestion: any) => {
+    setSearchQuery(suggestion.fullName);
+    setShowSuggestions(false);
+    setIsSearching(true);
+    patch("latitude", suggestion.lat);
+    patch("longitude", suggestion.lng);
+    patch("city", suggestion.name);
+    if (suggestion.state) patch("state", suggestion.state);
+    
+    const psh = await fetchNASA_PSH(suggestion.lat, suggestion.lng);
+    if (psh) {
+      patch("fetchedIrradiance", psh);
+    }
+    setIsSearching(false);
+  };
+
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     setIsSearching(true);
+    setShowSuggestions(false);
     const result = await geocodeLocation(searchQuery);
     if (result) {
       patch("latitude", result.lat);
       patch("longitude", result.lng);
-      patch("city", "Exact Location");
+      patch("city", result.name || "Exact Location");
       if (result.state) patch("state", result.state);
       
       const psh = await fetchNASA_PSH(result.lat, result.lng);
@@ -533,14 +575,38 @@ function LocationStep({
       </p>
 
       <div className="mt-6 flex flex-col gap-4">
-        <div className="flex gap-2">
-          <Input 
-            placeholder="Type any city or location..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
-            className="flex-1"
-          />
+        <div className="relative flex gap-2" ref={searchRef}>
+          <div className="relative flex-1">
+            <Input 
+              placeholder="Type any city or location..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => {
+                if (searchQuery.trim().length >= 3) setShowSuggestions(true);
+              }}
+              onKeyDown={(e) => { if (e.key === 'Enter') { setShowSuggestions(false); handleSearch(); } }}
+              className="w-full"
+            />
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 mt-2 w-full bg-surface border border-line rounded-xl shadow-soft z-50 overflow-hidden">
+                <ul className="max-h-60 overflow-auto py-2">
+                  {suggestions.map((s, i) => (
+                    <li 
+                      key={i} 
+                      className="px-4 py-2 hover:bg-secondary cursor-pointer text-sm font-medium transition-colors"
+                      onClick={() => handleSelectSuggestion(s)}
+                    >
+                      <p className="text-foreground">{s.name}</p>
+                      <p className="text-[11px] text-muted-foreground">{s.fullName}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
           <Button type="button" onClick={handleSearch} disabled={isSearching || !searchQuery.trim()} variant="secondary">
             {isSearching ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           </Button>
