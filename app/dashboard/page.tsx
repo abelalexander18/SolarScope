@@ -39,7 +39,7 @@ export default async function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {calculations.map((calc) => (
-              <div key={calc.id} className="rounded-3xl border border-line bg-surface p-6 shadow-xs hover:shadow-md transition-shadow group relative overflow-hidden">
+              <Link href={`/dashboard/calculation/${calc.id}`} key={calc.id} className="block rounded-3xl border border-line bg-surface p-6 shadow-xs hover:shadow-md transition-shadow group relative overflow-hidden">
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="font-display text-xl font-extrabold text-foreground truncate pr-4">{calc.name}</h3>
                   <span className="text-[10px] font-bold text-muted-foreground uppercase bg-secondary px-2 py-1 rounded-full whitespace-nowrap">
@@ -53,13 +53,13 @@ export default async function DashboardPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="bg-secondary/50 rounded-2xl p-4 border border-line/50">
+                  <div className="bg-secondary/50 rounded-2xl p-4 border border-line/50 group-hover:bg-fresh/5 transition-colors">
                     <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">System Size</span>
                     <span className="font-display font-extrabold text-foreground flex items-baseline gap-1">
                       {calc.system_size_kw} <span className="text-xs text-muted-foreground">kW</span>
                     </span>
                   </div>
-                  <div className="bg-secondary/50 rounded-2xl p-4 border border-line/50">
+                  <div className="bg-secondary/50 rounded-2xl p-4 border border-line/50 group-hover:bg-fresh/5 transition-colors">
                     <span className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Annual Yield</span>
                     <span className="font-display font-extrabold text-fresh flex items-baseline gap-1">
                       {calc.annual_generation_kwh.toLocaleString()} <span className="text-xs text-muted-foreground">kWh</span>
@@ -77,7 +77,7 @@ export default async function DashboardPage() {
                     <span className="font-bold text-foreground">{calc.payback_period_years} yrs</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
